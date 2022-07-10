@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+{% csrf_token %}
+
+<html lang="ru">
+  <head>    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{% static 'img/fav/fav.ico' %}" type="image">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/fav/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/fav/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/fav/favicon-16x16.png' %}">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <title>Интерфейс бота для отправки номеров</title>
+  </head>
+
+  <body>
+    <main>
+      <nav class="navbar navbar-light" style="background-color: white_paste">
+        <div class="container">
+            <div class="col-md-8 col-sm-8 col-xs-8">
+              <strong>Бот для отправки номеров на https://s1-nova.ru/app/private_test_python/</strong>
+            </div>
+        </div>
+      </nav>
+
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8 col-sm-8 col-xs-8">
+            <div class="row">
+              <div>
+                Сообщение бота: {{ bot_message }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <br>
+
+        {% load user_filters %}
+        
+        <form method="post">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6 col-sm-6 col-xs-6">
+              {{ form.bot_message|addclass:'form-control' }}
+            </div>
+            <div class="col-md-3 col-sm-3 col-xs-3">
+              <button type="submit" class="btn btn-primary">
+                Установить сообщение
+              </button>
+            </div>
+          </div>
+        </form>
+        
+        <br>
+
+        <form action="/clean_data/" method="GET">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">Очистить данные</button>
+        </form>
+
+        <div class="row">
+          <div class="col-md-4 col-sm-4 col-xs-4">
+            Отправленные номера:
+            <br>
+            {{ numbers_sent|linebreaksbr }}
+          </div>
+          <div class="col-md-4 col-sm-4 col-xs-4">
+            Данные API запроса:
+            <br>
+            {{ request_data }}
+          </div>
+        </div>
+      </div>
+      <br>
+
+      {% load user_filters %}
+      <nav class="navbar navbar-light" style="background-color: white_paste">
+        <div class="container">
+          <p>
+            {% now "Y" %}<span style="color:red">Nova</span>bot 
+          </p>
+        </div>
+      </nav>
+    </main>        
+  </body>
+</html>
