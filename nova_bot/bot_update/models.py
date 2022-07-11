@@ -13,4 +13,4 @@ class Login(models.Model):
         verbose_name_plural = 'Chat IDs'
 
     def __str__(self):
-        return self.username
+        return str(self.chat_id)
