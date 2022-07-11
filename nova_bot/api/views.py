@@ -1,16 +1,14 @@
+import logging
+import os
+from logging.handlers import RotatingFileHandler
+
+import requests
+from dotenv import load_dotenv
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from telegram import Bot, KeyboardButton, ReplyKeyboardMarkup
 
-import requests
-import logging
-# from telegram.ext import Updater, Filters, MessageHandler
-# from telegram.ext import CommandHandler
-from telegram import Bot, ReplyKeyboardMarkup, KeyboardButton
-from logging.handlers import RotatingFileHandler
-
-import os
-from dotenv import load_dotenv
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -29,38 +27,27 @@ handler.setFormatter(formatter)
 bot = Bot(token=os.getenv('TELEGRAM_TOKEN'))
 
 
-def send_number(phone_number, login):
-    
+def send_number(phone_number, username):
     url = 'https://s1-nova.ru/app/private_test_python/'
-    json = {'phone': phone_number,'login': login }
-
+    json = {'phone': phone_number, 'login': username}
     try:
-        response = requests.get('https://api.thecatapi.com/v1/images/search')
-        # response = requests.post(url=url, json=json)
+        response = requests.post(url=url, json=json)
+        logger.info('отправили номер ' + phone_number + ' для пользователя ' + username)
+        with open('numbers_sent.txt', 'a', encoding="utf-8") as f:
+            f.write(phone_number + ' ' + username + '\n')
     except Exception as error:
         logger.error(f'Ошибка при запросе к API: {error}')
-    logger.info('отправили номер ' + phone_number + 'для пользователя ' + login)
-
-
-def say_hi(update, context):
-    chat = update.effective_chat
-    with open('bot_message.txt', 'r', encoding="utf-8") as f:
-        text = f.read()
-    try:
-        context.bot.send_message(chat_id=chat.id, text=text)
-    except Exception as error:
-        logger.error(f'Ошибка при запросе к API Telegram: {error}')
 
 
 def wake_up(chat_id):
     with open('bot_message.txt', 'r', encoding="utf-8") as f:
         text = f.read()
     button = KeyboardButton(
-        text='Отправить номер', 
+        text='Отправить номер',
         request_contact=True
     )
     buttons = ReplyKeyboardMarkup([
-        [button,],],
+        [button, ], ],
         resize_keyboard=True
     )
     bot.send_message(
@@ -70,15 +57,18 @@ def wake_up(chat_id):
     )
 
 
-@api_view(['POST'])  
+@api_view(['POST'])
 def bot_data(request):
     with open('request_data.txt', 'w', encoding="utf-8") as f:
         f.write(str(request.data))
     message_id = request.data.get('message', {}).get('message_id', {})
     message_text = request.data.get('message', {}).get('text', {})
     chat_id = request.data.get('message', {}).get('chat', {}).get('id', {})
-    if message_id == 17 and message_text == '/start':
+
+    username = request.data.get('message', {}).get('chat', {}).get('username', {})
+    phone_number = request.data.get('message', {}).get('contact', {}).get('phone_number', {})
+    if (message_id == 1 and message_text == '/start') or message_text == '/initialize':
         wake_up(chat_id)
-    # with open('numbers_sent.txt', 'a', encoding="utf-8") as f:
-    #     f.write(str(number) + '\n')
+    if phone_number:
+        send_number(phone_number, username)
     return Response(status=status.HTTP_200_OK)

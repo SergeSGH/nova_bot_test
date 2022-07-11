@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import OnePageView, CleanData
+from .views import CleanData, OnePageView
 
 urlpatterns = (
     path('', OnePageView, name='index'),
