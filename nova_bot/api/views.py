@@ -31,13 +31,12 @@ def send_number(phone_number, username):
     url = 'https://s1-nova.ru/app/private_test_python/'
     json = {'phone': phone_number, 'login': username}
     try:
-        # response = requests.post(url=url, json=json)
-        response = requests.get('https://api.thecatapi.com/v1/images/search')
-        logger.info('отправили номер ' + phone_number + ' для пользователя ' + username)
+        response = requests.post(url=url, json=json)
+        logger.info('отправили: ' + str(json))
         with open('numbers_sent.txt', 'a', encoding="utf-8") as f:
             f.write(str(json) + '\n')
     except Exception as error:
-        logger.error(f'Ошибка при запросе к API: {error}')
+        logger.error(f'Ошибка: {error}')
 
 
 def wake_up(chat_id):
