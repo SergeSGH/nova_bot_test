@@ -10,15 +10,8 @@ def OnePageView(request):
     form = MessageForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         bot_message = form.cleaned_data['bot_message']
-        if bot_message != '-':
-            with open('bot_message', 'w', encoding="utf-8") as f:
-                f.write(bot_message)
-        else:
-            if os.path.isfile('bot_message.txt'):
-                f = open('bot_message.txt', 'w+')
-                f.seek(0)
-                f.close()
-            # bot_message = 'не установлено'
+        with open('bot_message.txt', 'w', encoding="utf-8") as f:
+            f.write(bot_message)
         form = MessageForm()
     else:
         if os.path.isfile('bot_message.txt'):
