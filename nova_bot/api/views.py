@@ -4,9 +4,9 @@ from rest_framework.response import Response
 
 import requests
 import logging
-from telegram.ext import Updater, Filters, MessageHandler
-from telegram.ext import CommandHandler
-from telegram import ReplyKeyboardMarkup
+# from telegram.ext import Updater, Filters, MessageHandler
+# from telegram.ext import CommandHandler
+from telegram import Bot, ReplyKeyboardMarkup, KeyboardButton
 from logging.handlers import RotatingFileHandler
 
 import os
@@ -26,6 +26,7 @@ formatter = logging.Formatter(
 )
 handler.setFormatter(formatter)
 
+bot = Bot(token=os.getenv('TELEGRAM_TOKEN'))
 
 
 def send_number(phone_number, login):
@@ -51,26 +52,33 @@ def say_hi(update, context):
         logger.error(f'Ошибка при запросе к API Telegram: {error}')
 
 
-def wake_up(update, context):
-    chat = update.effective_chat
-    button = ReplyKeyboardMarkup([
-        ['/request_contact',],],
-        resize_keyboard=True, request_contact=True
+def wake_up(chat_id):
+    with open('bot_message.txt', 'r', encoding="utf-8") as f:
+        text = f.read()
+    button = KeyboardButton(
+        text='Отправить номер', 
+        request_contact=True
     )
-    # context.bot.send_photo(chat.id, get_new_image())
-    context.bot.send_message(
-        chat_id=chat.id,
-        text='Привет, а дай номер',
-        reply_markup=button
+    buttons = ReplyKeyboardMarkup([
+        [button,],],
+        resize_keyboard=True
     )
-
+    bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        reply_markup=buttons
+    )
 
 
 @api_view(['POST'])  
 def bot_data(request):
     with open('request_data.txt', 'w', encoding="utf-8") as f:
         f.write(str(request.data))
-    number = request.data.get('number', 'нет данных')
-    with open('numbers_sent.txt', 'a', encoding="utf-8") as f:
-        f.write(str(number) + '\n')
+    message_id = request.data.get('message', {}).get('message_id', {})
+    message_text = request.data.get('message', {}).get('text', {})
+    chat_id = request.data.get('message', {}).get('chat', {}).get('id', {})
+    if message_id == 17 and message_text == '/start':
+        wake_up(chat_id)
+    # with open('numbers_sent.txt', 'a', encoding="utf-8") as f:
+    #     f.write(str(number) + '\n')
     return Response(status=status.HTTP_200_OK)
