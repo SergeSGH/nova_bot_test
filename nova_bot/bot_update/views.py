@@ -5,6 +5,8 @@ from django.shortcuts import redirect, render
 from .forms import MessageForm
 
 
+# вью для страницы с логами (с ней удобнее смотреть полученные данные от Telegram)
+# также можно поменять сообщение при запуске бота
 def OnePageView(request):
     template = 'index.html'
     form = MessageForm(request.POST or None)
@@ -40,7 +42,7 @@ def OnePageView(request):
     }
     return render(request, template, context)
 
-
+# удаляем данные на странице по запросу
 def CleanData(request):
     if os.path.isfile('request_data.txt'):
         f = open('request_data.txt', 'w+')
